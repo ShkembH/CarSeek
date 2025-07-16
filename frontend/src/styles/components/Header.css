@@ -1,0 +1,334 @@
+/* Header Component Styles */
+
+/* Main header styles */
+.header {
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s;
+  will-change: transform;
+}
+.header-slide-down {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.header-slide-up {
+  transform: translateY(-110%);
+  box-shadow: none;
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+/* Logo styles */
+.header-logo {
+  flex: 0 0 auto;
+}
+
+.header-logo-link {
+  text-decoration: none !important;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.header-logo-text {
+  font-size: 24px;
+  font-weight: bold;
+  color: #232946;
+  font-family: Arial, sans-serif;
+}
+
+.header-logo-accent {
+  font-size: 24px;
+  font-weight: bold;
+  color: #6b7280;
+  font-family: Arial, sans-serif;
+}
+
+/* Navigation styles */
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex: 1;
+  justify-content: center;
+}
+
+.header-nav-link {
+  color: #232946;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+  cursor: pointer;
+}
+
+.header-nav-link:hover {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+/* Buy dropdown styles */
+.header-buy-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.header-buy-btn {
+  background: none;
+  border: none;
+  color: #232946;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+  cursor: pointer;
+}
+
+.header-buy-btn:hover {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+.header-buy-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-width: 150px;
+  z-index: 1000;
+  margin-top: 4px;
+}
+
+.header-buy-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  color: #232946;
+  text-decoration: none;
+  font-size: 14px;
+  background: none;
+  border: none;
+  text-align: left;
+  transition: background 0.2s, color 0.2s;
+  cursor: pointer;
+}
+
+.header-buy-dropdown-item:hover {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+/* Right section styles */
+.header-right-section {
+  flex: 0 0 auto;
+}
+
+.header-user-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Button styles */
+.header-login-btn {
+  text-decoration: none;
+  background: #e0e7ff;
+  color: #232946;
+  font-weight: 600;
+  border: 1.5px solid #c7d2fe;
+  border-radius: 8px;
+  padding: 8px 18px;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+  box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+}
+.header-login-btn:hover {
+  text-decoration: none;
+  background: #c7d2fe;
+  color: #1f2937;
+  border-color: #a5b4fc;
+}
+
+.header-register-btn {
+  text-decoration: none;
+  background: #d1fae5;
+  color: #232946;
+  font-weight: 700;
+  border: 1.5px solid #6ee7b7;
+  border-radius: 8px;
+  padding: 8px 20px;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+  box-shadow: 0 2px 8px rgba(16,185,129,0.08);
+}
+.header-register-btn:hover {
+  text-decoration: none;
+  background: #6ee7b7;
+  color: #1f2937;
+  border-color: #34d399;
+}
+
+.header-dashboard-btn {
+  background: #e0e7ff;
+  color: #232946;
+  font-weight: 500;
+  border: 1px solid #c7d2fe;
+  border-radius: 6px;
+  padding: 8px 16px;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+  text-decoration: none;
+}
+.header-dashboard-btn:hover {
+  background: #c7d2fe;
+  color: #1f2937;
+  border-color: #a5b4fc;
+  text-decoration: none;
+}
+
+.header-add-listing-btn {
+  background: #d1fae5;
+  color: #232946;
+  font-weight: 500;
+  border: 1px solid #6ee7b7;
+  border-radius: 6px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+  text-decoration: none;
+}
+.header-add-listing-btn:hover {
+  background: #6ee7b7;
+  color: #1f2937;
+  border-color: #34d399;
+  text-decoration: none;
+}
+
+.header-plus-icon {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Profile dropdown styles */
+.header-profile-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.header-profile-btn {
+  background: #f3f4f6;
+  color: #232946;
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-profile-btn:hover {
+  background: #e5e7eb;
+  color: #1f2937;
+  border-color: #d1d5db;
+}
+
+.header-profile-picture {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #e5e7eb;
+  color: #232946;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.header-dropdown-arrow {
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+.header-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+  z-index: 1000;
+  margin-top: 4px;
+}
+
+.header-dropdown-item {
+  display: block;
+  padding: 12px 16px;
+  color: #232946;
+  text-decoration: none;
+  font-size: 14px;
+  transition: background 0.2s, color 0.2s;
+  border-bottom: none;
+  cursor: pointer;
+}
+
+.header-dropdown-item:hover {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+.header-dropdown-divider {
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 4px 0;
+}
+
+.header-dropdown-logout {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  color: #e53e3e;
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.header-dropdown-logout:hover {
+  background: #f3f4f6;
+}
