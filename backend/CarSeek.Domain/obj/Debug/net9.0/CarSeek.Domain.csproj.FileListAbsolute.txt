@@ -1,0 +1,11 @@
+C:\Users\Pc\Desktop\CarSeek\backend\CarSeek.Domain\bin\Debug\net9.0\CarSeek.Domain.deps.json
+C:\Users\Pc\Desktop\CarSeek\backend\CarSeek.Domain\bin\Debug\net9.0\CarSeek.Domain.dll
+C:\Users\Pc\Desktop\CarSeek\backend\CarSeek.Domain\bin\Debug\net9.0\CarSeek.Domain.pdb
+C:\Users\Pc\Desktop\CarSeek\backend\CarSeek.Domain\obj\Debug\net9.0\CarSeek.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Pc\Desktop\CarSeek\backend\CarSeek.Domain\obj\Debug\net9.0\CarSeek.Domain.AssemblyInfoInputs.cache
+C:\Users\Pc\Desktop\CarSeek\backend\CarSeek.Domain\obj\Debug\net9.0\CarSeek.Domain.AssemblyInfo.cs
+C:\Users\Pc\Desktop\CarSeek\backend\CarSeek.Domain\obj\Debug\net9.0\CarSeek.Domain.csproj.CoreCompileInputs.cache
+C:\Users\Pc\Desktop\CarSeek\backend\CarSeek.Domain\obj\Debug\net9.0\CarSeek.Domain.dll
+C:\Users\Pc\Desktop\CarSeek\backend\CarSeek.Domain\obj\Debug\net9.0\refint\CarSeek.Domain.dll
+C:\Users\Pc\Desktop\CarSeek\backend\CarSeek.Domain\obj\Debug\net9.0\CarSeek.Domain.pdb
+C:\Users\Pc\Desktop\CarSeek\backend\CarSeek.Domain\obj\Debug\net9.0\ref\CarSeek.Domain.dll
