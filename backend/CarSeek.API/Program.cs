@@ -93,6 +93,13 @@ public class Program
 
         var app = builder.Build();
 
+        // Ensure database is created and migrated
+        using (var scope = app.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            context.Database.EnsureCreated();
+        }
+
         // Configure the HTTP request pipeline.
         // Comment out the environment check temporarily
         // if (app.Environment.IsDevelopment())
