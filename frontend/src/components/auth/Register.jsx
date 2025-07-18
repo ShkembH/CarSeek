@@ -102,7 +102,14 @@ const Register = () => {
     const { confirmPassword, confirmEmail, ...userData } = formData;
     const result = await register(userData);
     if (result.success) {
-      window.location.href = '/';
+      // Check if this is a dealership registration that requires approval
+      if (result.requiresApproval) {
+        // Redirect to pending approval page with the approval message
+        window.location.href = `/pending-approval?message=${encodeURIComponent(result.approvalMessage || '')}`;
+      } else {
+        // Individual users go directly to home page
+        window.location.href = '/';
+      }
     }
     setIsLoading(false);
   };

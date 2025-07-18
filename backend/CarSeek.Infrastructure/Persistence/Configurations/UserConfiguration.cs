@@ -31,6 +31,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.Role)
             .IsRequired();
 
+        builder.Property(u => u.Status)
+            .IsRequired()
+            .HasDefaultValue(CarSeek.Domain.Enums.UserStatus.Approved);
+
         // Relationships
         builder.HasOne(u => u.Dealership)
             .WithOne(d => d.User)

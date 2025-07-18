@@ -29,7 +29,7 @@ public class CarListingTests : TestBase
             CompanyName: null,
             CompanyUniqueNumber: null,
             Location: null,
-            BusinessCertificatePath: null);
+            BusinessCertificate: null);
 
         await _client.PostAsJsonAsync("/api/auth/register", registerRequest);
 
@@ -196,7 +196,7 @@ public class CarListingTests : TestBase
             CompanyName: null,
             CompanyUniqueNumber: null,
             Location: null,
-            BusinessCertificatePath: null);
+            BusinessCertificate: null);
 
         await _client.PostAsJsonAsync("/api/auth/register", regularUserRegister);
 
@@ -261,7 +261,7 @@ public class CarListingTests : TestBase
             CompanyName: null,
             CompanyUniqueNumber: null,
             Location: null,
-            BusinessCertificatePath: null);
+            BusinessCertificate: null);
 
         await _client.PostAsJsonAsync("/api/auth/register", dealer2Register);
 

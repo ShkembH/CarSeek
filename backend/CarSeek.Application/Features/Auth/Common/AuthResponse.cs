@@ -8,4 +8,6 @@ public record AuthResponse(
     string FirstName,
     string LastName,
     UserRole Role,
-    string Token);
+    string Token,
+    bool RequiresApproval = false,
+    string? ApprovalMessage = null);

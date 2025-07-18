@@ -14,6 +14,7 @@ public class User : BaseEntity
     public string? City { get; set; }
     public UserRole Role { get; set; }
     public bool IsActive { get; set; }
+    public UserStatus Status { get; set; } = UserStatus.Approved;
 
     // Navigation properties
     public Dealership? Dealership { get; set; }

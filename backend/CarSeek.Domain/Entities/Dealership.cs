@@ -14,6 +14,7 @@ public class Dealership : BaseEntity
     public string BusinessCertificatePath { get; set; } = string.Empty;
     public string Location { get; set; } = string.Empty;
 
+    public bool IsApproved { get; set; } = false;
     // Navigation properties
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;

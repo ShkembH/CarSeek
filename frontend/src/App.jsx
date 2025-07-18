@@ -16,6 +16,7 @@ import AdminRoute from './components/AdminRoute';
 import SavedListings from './pages/SavedListings';
 import MyProfile from './pages/MyProfile';
 import Inbox from './pages/Inbox';
+import PendingApproval from './pages/PendingApproval';
 import './App.css';
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
               <Route path="/listings/:id" element={<CarDetails />} /> {/* No auth needed */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/pending-approval" element={<PendingApproval />} />
               <Route path="/saved-listings" element={<SavedListings />} />
               <Route path="/profile" element={
                 <ProtectedRoute>

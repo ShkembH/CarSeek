@@ -28,6 +28,12 @@ public class GetPendingApprovalsQueryHandler : IRequestHandler<GetPendingApprova
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(cancellationToken);
 
+        var pendingDealerships = await _context.Dealerships
+            .Where(d => !d.IsApproved)
+            .Include(d => d.User)
+            .OrderByDescending(d => d.CreatedAt)
+            .ToListAsync(cancellationToken);
+
         var pendingApprovals = pendingListings.Select(listing => new PendingApprovalDto
         {
             Id = listing.Id,
@@ -37,6 +43,34 @@ public class GetPendingApprovalsQueryHandler : IRequestHandler<GetPendingApprova
             SubmittedDate = listing.CreatedAt,
             Description = listing.Description
         }).ToList();
+
+        pendingApprovals.AddRange(pendingDealerships.Select(dealership => new PendingApprovalDto
+        {
+            Id = dealership.Id,
+            Type = "Dealership",
+            Title = dealership.Name,
+            Submitter = $"{dealership.User.FirstName} {dealership.User.LastName}",
+            SubmittedDate = dealership.CreatedAt,
+            Description = dealership.Description,
+            DealershipName = dealership.Name,
+            DealershipDescription = dealership.Description,
+            AddressStreet = dealership.Address?.Street ?? string.Empty,
+            AddressCity = dealership.Address?.City ?? string.Empty,
+            AddressState = dealership.Address?.State ?? string.Empty,
+            AddressPostalCode = dealership.Address?.PostalCode ?? string.Empty,
+            AddressCountry = dealership.Address?.Country ?? string.Empty,
+            DealershipPhoneNumber = dealership.PhoneNumber,
+            Website = dealership.Website,
+            CompanyUniqueNumber = dealership.CompanyUniqueNumber,
+            BusinessCertificatePath = dealership.BusinessCertificatePath,
+            Location = dealership.Location,
+            UserEmail = dealership.User.Email,
+            UserFirstName = dealership.User.FirstName,
+            UserLastName = dealership.User.LastName,
+            UserPhoneNumber = dealership.User.PhoneNumber ?? string.Empty,
+            UserCountry = dealership.User.Country ?? string.Empty,
+            UserCity = dealership.User.City ?? string.Empty
+        }));
 
         return pendingApprovals;
     }

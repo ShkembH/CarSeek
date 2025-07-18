@@ -34,6 +34,8 @@ const Dashboard = () => {
   // Add state for user deletion modal
   const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+  const [showDealershipDetailsModal, setShowDealershipDetailsModal] = useState(false);
+  const [selectedDealership, setSelectedDealership] = useState(null);
 
   // --- Data Fetching & Side Effects ---
   useEffect(() => {
@@ -160,6 +162,38 @@ const Dashboard = () => {
   });
 
   // --- Event Handlers ---
+  const handleApproveDealership = async (dealershipId) => {
+    try {
+      await apiService.approveDealership(dealershipId);
+      const [pendingApprovalsResponse, statsResponse] = await Promise.all([
+        apiService.getPendingApprovals(),
+        apiService.getAdminStats()
+      ]);
+      setPendingApprovals(pendingApprovalsResponse);
+      setStats(statsResponse);
+      localStorage.setItem('listingsUpdated', Date.now().toString());
+    } catch (error) {
+      console.error('Error approving dealership:', error);
+    }
+  };
+
+  const handleRejectDealership = async (dealershipId) => {
+    try {
+      await apiService.rejectDealership(dealershipId);
+      const [pendingApprovalsResponse, statsResponse] = await Promise.all([
+        apiService.getPendingApprovals(),
+        apiService.getAdminStats()
+      ]);
+      setPendingApprovals(pendingApprovalsResponse);
+      setStats(statsResponse);
+      setShowDealershipDetailsModal(false);
+      setSelectedDealership(null);
+      localStorage.setItem('listingsUpdated', Date.now().toString());
+    } catch (error) {
+      console.error('Error rejecting dealership:', error);
+    }
+  };
+
   const handleApproveListing = async (listingId) => {
     try {
       await apiService.approveListing(listingId);
@@ -299,13 +333,13 @@ const Dashboard = () => {
       <div style={{ display: 'flex', gap: '18px', flexWrap: 'wrap', marginBottom: 24 }}>
         <div style={{ flex: 1, minWidth: 160 }}>
           <div style={{ background: '#f2f4f8', borderRadius: 12, padding: 18, textAlign: 'center' }}>
-            <div style={{ fontSize: 32, fontWeight: 700, color: '#2563eb' }}>{stats.totalUsers.toLocaleString()}</div>
+            <div style={{ fontSize: 32, fontWeight: 700, color: '#2563eb' }}>{stats && typeof stats.totalUsers === 'number' ? stats.totalUsers.toLocaleString() : 'N/A'}</div>
             <div style={{ color: '#3a4256', fontWeight: 500 }}>Total Users</div>
           </div>
         </div>
         <div style={{ flex: 1, minWidth: 160 }}>
           <div style={{ background: '#f2f4f8', borderRadius: 12, padding: 18, textAlign: 'center' }}>
-            <div style={{ fontSize: 32, fontWeight: 700, color: '#2563eb' }}>{stats.totalListings.toLocaleString()}</div>
+            <div style={{ fontSize: 32, fontWeight: 700, color: '#2563eb' }}>{stats && typeof stats.totalListings === 'number' ? stats.totalListings.toLocaleString() : 'N/A'}</div>
             <div style={{ color: '#3a4256', fontWeight: 500 }}>Total Listings</div>
           </div>
         </div>
@@ -317,19 +351,19 @@ const Dashboard = () => {
         </div>
         <div style={{ flex: 1, minWidth: 160 }}>
           <div style={{ background: '#f2f4f8', borderRadius: 12, padding: 18, textAlign: 'center' }}>
-            <div style={{ fontSize: 32, fontWeight: 700, color: '#e11d48' }}>{stats.pendingApprovals}</div>
+            <div style={{ fontSize: 32, fontWeight: 700, color: '#e11d48' }}>{stats && typeof stats.pendingApprovals === 'number' ? stats.pendingApprovals : 'N/A'}</div>
             <div style={{ color: '#3a4256', fontWeight: 500 }}>Pending Approvals</div>
           </div>
         </div>
         <div style={{ flex: 1, minWidth: 160 }}>
           <div style={{ background: '#f2f4f8', borderRadius: 12, padding: 18, textAlign: 'center' }}>
-            <div style={{ fontSize: 32, fontWeight: 700, color: '#16a34a' }}>${stats.monthlyRevenue.toLocaleString()}</div>
+            <div style={{ fontSize: 32, fontWeight: 700, color: '#16a34a' }}>${stats && typeof stats.monthlyRevenue === 'number' ? stats.monthlyRevenue.toLocaleString() : 'N/A'}</div>
             <div style={{ color: '#3a4256', fontWeight: 500 }}>Monthly Revenue</div>
           </div>
         </div>
         <div style={{ flex: 1, minWidth: 160 }}>
           <div style={{ background: '#f2f4f8', borderRadius: 12, padding: 18, textAlign: 'center' }}>
-            <div style={{ fontSize: 32, fontWeight: 700, color: '#2563eb' }}>{stats.activeUsers}</div>
+            <div style={{ fontSize: 32, fontWeight: 700, color: '#2563eb' }}>{stats && typeof stats.activeUsers === 'number' ? stats.activeUsers : 'N/A'}</div>
             <div style={{ color: '#3a4256', fontWeight: 500 }}>Active Users</div>
           </div>
         </div>
@@ -366,7 +400,11 @@ const Dashboard = () => {
                   <div style={{ fontSize: 13, color: '#888' }}>{item.type || 'Unknown'} • {item.submitter || 'Unknown'}</div>
                   <div style={{ fontSize: 12, color: '#aaa' }}>{item.date ? new Date(item.date).toLocaleDateString() : 'No date'}</div>
                   <div style={{ marginTop: 6 }}>
-                    <button className="admin-dashboard-btn" style={{ padding: '4px 12px', fontSize: 13, marginRight: 6 }} onClick={() => handleApproveListing(item.id)}>Approve</button>
+                    {item.type === 'Dealership' ? (
+                      <button className="admin-dashboard-btn" style={{ padding: '4px 12px', fontSize: 13, marginRight: 6 }} onClick={() => handleApproveDealership(item.id)}>Approve</button>
+                    ) : (
+                      <button className="admin-dashboard-btn" style={{ padding: '4px 12px', fontSize: 13, marginRight: 6 }} onClick={() => handleApproveListing(item.id)}>Approve</button>
+                    )}
                     <button className="admin-dashboard-btn delete" style={{ padding: '4px 12px', fontSize: 13 }} onClick={() => handleRejectListing(item.id)}>Reject</button>
                   </div>
                 </div>
@@ -584,6 +622,67 @@ const Dashboard = () => {
     </div>
   );
 
+  const renderPendingApprovals = () => (
+    <div>
+      <div className="admin-dashboard-filters" style={{ marginBottom: 18 }}>
+        <input
+          type="text"
+          placeholder="Search pending approvals..."
+        />
+        <button className="admin-dashboard-btn">Export</button>
+      </div>
+      <div className="admin-dashboard-table-container">
+        <table className="admin-dashboard-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Title</th>
+              <th>Submitted By</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pendingApprovals.map(item => (
+              <tr key={item.id}>
+                <td>
+                  <span style={{ background: '#f2f4f8', color: '#2563eb', borderRadius: 6, padding: '2px 10px', fontWeight: 500, fontSize: 13 }}>
+                    {item.type === 'Dealership' ? 'Dealership' : 'Listing'}
+                  </span>
+                </td>
+                <td>
+                  <div style={{ cursor: 'pointer' }} onClick={() => {
+                    if (item.type === 'Dealership') {
+                      setSelectedDealership(item);
+                      setShowDealershipDetailsModal(true);
+                    }
+                  }}>
+                    {item.title || 'Untitled'}
+                    {item.type === 'Dealership' && (
+                      <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>
+                        Click to view details
+                      </div>
+                    )}
+                  </div>
+                </td>
+                <td>{item.submitter || 'N/A'}</td>
+                <td>{item.submittedDate ? new Date(item.submittedDate).toLocaleDateString() : 'N/A'}</td>
+                <td>
+                  {item.type === 'Dealership' ? (
+                    <button className="admin-dashboard-btn" style={{ padding: '4px 12px', fontSize: 13, marginRight: 6 }} onClick={() => handleApproveDealership(item.id)}>Approve</button>
+                  ) : (
+                    <button className="admin-dashboard-btn" style={{ padding: '4px 12px', fontSize: 13, marginRight: 6 }} onClick={() => handleApproveListing(item.id)}>Approve</button>
+                  )}
+                  <button className="admin-dashboard-btn delete" style={{ padding: '4px 12px', fontSize: 13 }} onClick={() => handleRejectListing(item.id)}>Reject</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
   const renderContent = () => {
     switch (activeTab) {
       case 'overview':
@@ -594,6 +693,8 @@ const Dashboard = () => {
         return renderListings();
       case 'dealerships':
         return renderDealerships();
+      case 'pending-approvals':
+        return renderPendingApprovals();
       default:
         return renderOverview();
     }
@@ -672,6 +773,20 @@ const Dashboard = () => {
           >
             Dealerships
           </button>
+          <button
+            className={`admin-dashboard-btn ${activeTab === 'pending-approvals' ? '' : ''}`}
+            style={{
+              justifyContent: 'flex-start',
+              textAlign: 'left',
+              background: activeTab === 'pending-approvals' ? 'linear-gradient(90deg, #2563eb 0%, #4f8cff 100%)' : 'transparent',
+              color: activeTab === 'pending-approvals' ? '#fff' : '#3a4256',
+              border: activeTab === 'pending-approvals' ? 'none' : '1px solid #e5e7eb',
+              fontWeight: activeTab === 'pending-approvals' ? 600 : 500
+            }}
+            onClick={() => setActiveTab('pending-approvals')}
+          >
+            Pending Approvals
+          </button>
         </div>
       </div>
 
@@ -707,6 +822,67 @@ const Dashboard = () => {
             <div className="modal-actions">
               <button className="admin-dashboard-btn delete" onClick={confirmDeleteUser}>Delete</button>
               <button className="admin-dashboard-btn" onClick={() => setShowDeleteUserModal(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Dealership Details Modal */}
+      {showDealershipDetailsModal && selectedDealership && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '800px', maxHeight: '90vh', overflow: 'auto' }}>
+            <h3>Dealership Registration Details</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
+                                    <div>
+                        <h4 style={{ marginBottom: '10px', color: '#2563eb' }}>Dealership Information</h4>
+                        <div style={{ background: '#f8fafc', padding: '15px', borderRadius: '8px' }}>
+                          <p><strong>Name:</strong> {selectedDealership.dealershipName || 'N/A'}</p>
+                          <p><strong>Description:</strong> {selectedDealership.dealershipDescription || 'N/A'}</p>
+                          <p><strong>Phone:</strong> {selectedDealership.dealershipPhoneNumber || 'N/A'}</p>
+                          <p><strong>Website:</strong> {selectedDealership.website || 'N/A'}</p>
+                          <p><strong>Company Unique Number:</strong> {selectedDealership.companyUniqueNumber || 'N/A'}</p>
+                          <p><strong>Location:</strong> {selectedDealership.location || 'N/A'}</p>
+                          <p><strong>Business Certificate:</strong> 
+                            {selectedDealership.businessCertificatePath ? (
+                              <a 
+                                href={selectedDealership.businessCertificatePath} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                style={{ color: '#2563eb', textDecoration: 'underline' }}
+                              >
+                                View Certificate
+                              </a>
+                            ) : (
+                              'N/A'
+                            )}
+                          </p>
+                        </div>
+                      </div>
+              <div>
+                <h4 style={{ marginBottom: '10px', color: '#2563eb' }}>Address Information</h4>
+                <div style={{ background: '#f8fafc', padding: '15px', borderRadius: '8px' }}>
+                  <p><strong>Street:</strong> {selectedDealership.addressStreet || 'N/A'}</p>
+                  <p><strong>City:</strong> {selectedDealership.addressCity || 'N/A'}</p>
+                  <p><strong>State:</strong> {selectedDealership.addressState || 'N/A'}</p>
+                  <p><strong>Postal Code:</strong> {selectedDealership.addressPostalCode || 'N/A'}</p>
+                  <p><strong>Country:</strong> {selectedDealership.addressCountry || 'N/A'}</p>
+                </div>
+              </div>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <h4 style={{ marginBottom: '10px', color: '#2563eb' }}>Contact Person Information</h4>
+                <div style={{ background: '#f8fafc', padding: '15px', borderRadius: '8px' }}>
+                  <p><strong>Name:</strong> {selectedDealership.userFirstName} {selectedDealership.userLastName}</p>
+                  <p><strong>Email:</strong> {selectedDealership.userEmail || 'N/A'}</p>
+                  <p><strong>Phone:</strong> {selectedDealership.userPhoneNumber || 'N/A'}</p>
+                  <p><strong>Country:</strong> {selectedDealership.userCountry || 'N/A'}</p>
+                  <p><strong>City:</strong> {selectedDealership.userCity || 'N/A'}</p>
+                </div>
+              </div>
+            </div>
+            <div className="modal-actions" style={{ marginTop: '20px' }}>
+              <button className="admin-dashboard-btn" onClick={() => handleApproveDealership(selectedDealership.id)}>Approve Dealership</button>
+              <button className="admin-dashboard-btn delete" onClick={() => handleRejectDealership(selectedDealership.id)}>Reject Dealership</button>
+              <button className="admin-dashboard-btn" onClick={() => setShowDealershipDetailsModal(false)}>Close</button>
             </div>
           </div>
         </div>

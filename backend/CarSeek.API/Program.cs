@@ -62,7 +62,20 @@ public class Program
                };
            });
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+            });
+        
+        // Configure form options for file uploads
+        builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+        {
+            options.ValueLengthLimit = int.MaxValue;
+            options.MultipartBodyLengthLimit = int.MaxValue;
+            options.MultipartHeadersLengthLimit = int.MaxValue;
+        });
+        
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
@@ -97,6 +110,8 @@ public class Program
         using (var scope = app.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            // Force database recreation to include new columns
+            context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
         }
 

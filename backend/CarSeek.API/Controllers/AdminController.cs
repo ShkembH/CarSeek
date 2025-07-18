@@ -63,6 +63,48 @@ public class AdminController : ApiControllerBase
         return Ok();
     }
 
+    [HttpPatch("dealerships/{id}/approve")]
+    public async Task<ActionResult> ApproveDealership(Guid id)
+    {
+        var dealership = _context.Dealerships.FirstOrDefault(d => d.Id == id);
+        if (dealership == null)
+            return NotFound();
+        
+        dealership.IsApproved = true;
+        
+        // Update the user status to approved and active
+        var user = _context.Users.FirstOrDefault(u => u.Id == dealership.UserId);
+        if (user != null)
+        {
+            user.Status = UserStatus.Approved;
+            user.IsActive = true;
+        }
+        
+        await _context.SaveChangesAsync(default);
+        return Ok();
+    }
+
+    [HttpPatch("dealerships/{id}/reject")]
+    public async Task<ActionResult> RejectDealership(Guid id)
+    {
+        var dealership = _context.Dealerships.FirstOrDefault(d => d.Id == id);
+        if (dealership == null)
+            return NotFound();
+        
+        // Update the user status to rejected and inactive
+        var user = _context.Users.FirstOrDefault(u => u.Id == dealership.UserId);
+        if (user != null)
+        {
+            user.Status = UserStatus.Rejected;
+            user.IsActive = false;
+        }
+        
+        // Remove the dealership record
+        _context.Dealerships.Remove(dealership);
+        await _context.SaveChangesAsync(default);
+        return Ok();
+    }
+
     [HttpPatch("listings/{id}/reject")]
     public async Task<ActionResult> RejectListing(Guid id)
     {

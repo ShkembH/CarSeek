@@ -74,7 +74,8 @@ public class CreateDealershipCommandHandler : IRequestHandler<CreateDealershipCo
             UserId = user.Id,
             CompanyUniqueNumber = request.Request.CompanyUniqueNumber,
             BusinessCertificatePath = certificatePath,
-            Location = request.Request.Location
+            Location = request.Request.Location,
+            IsApproved = false // New dealership registrations are not approved by default
         };
 
         _context.Dealerships.Add(dealership);

@@ -29,7 +29,7 @@ public class DealershipTests : TestBase
             CompanyName: null,
             CompanyUniqueNumber: null,
             Location: null,
-            BusinessCertificatePath: null);
+            BusinessCertificate: null);
 
         var authResponse = await _client.PostAsJsonAsync("/api/auth/register", registerRequest);
         authResponse.EnsureSuccessStatusCode();
@@ -84,7 +84,7 @@ public class DealershipTests : TestBase
             CompanyName: null,
             CompanyUniqueNumber: null,
             Location: null,
-            BusinessCertificatePath: null);
+            BusinessCertificate: null);
 
         var authResponse = await _client.PostAsJsonAsync("/api/auth/register", registerRequest);
         authResponse.EnsureSuccessStatusCode();

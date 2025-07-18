@@ -6,6 +6,7 @@ using CarSeek.Application.Common.Exceptions;
 using CarSeek.Application.Features.Auth.Common;
 using CarSeek.Domain.Entities;
 using CarSeek.Domain.Enums;
+using Microsoft.AspNetCore.Http;
 
 namespace CarSeek.Application.Features.Auth.Commands;
 
@@ -21,7 +22,7 @@ public record RegisterCommand(
     string? CompanyName,
     string? CompanyUniqueNumber,
     string? Location,
-    string? BusinessCertificatePath
+    IFormFile? BusinessCertificate
 ) : IRequest<AuthResponse>;
 
 public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResponse>
@@ -30,17 +31,20 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenGenerator _tokenGenerator;
     private readonly IActivityLogger _activityLogger;
+    private readonly IFileStorageService _fileStorageService;
 
     public RegisterCommandHandler(
         IApplicationDbContext context,
         IPasswordHasher passwordHasher,
         IJwtTokenGenerator tokenGenerator,
-        IActivityLogger activityLogger)
+        IActivityLogger activityLogger,
+        IFileStorageService fileStorageService)
     {
         _context = context;
         _passwordHasher = passwordHasher;
         _tokenGenerator = tokenGenerator;
         _activityLogger = activityLogger;
+        _fileStorageService = fileStorageService;
     }
 
     public async Task<AuthResponse> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -65,7 +69,8 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
             Country = request.Country,
             City = request.City,
             Role = request.Role,
-            IsActive = true
+            Status = request.Role == UserRole.Dealership ? UserStatus.PendingApproval : UserStatus.Approved,
+            IsActive = request.Role == UserRole.Dealership ? false : true
         };
 
         _context.Users.Add(user);
@@ -74,6 +79,24 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
         // If the user is a dealership, create a Dealership record
         if (user.Role == UserRole.Dealership)
         {
+            string businessCertificatePath = string.Empty;
+            
+            // Handle business certificate file upload
+            if (request.BusinessCertificate != null && request.BusinessCertificate.Length > 0)
+            {
+                using var memoryStream = new MemoryStream();
+                await request.BusinessCertificate.CopyToAsync(memoryStream, cancellationToken);
+                var fileData = memoryStream.ToArray();
+                
+                // Generate unique filename
+                var fileName = $"{Guid.NewGuid()}_{request.BusinessCertificate.FileName}";
+                businessCertificatePath = await _fileStorageService.UploadFileAsync(
+                    fileName, 
+                    fileData, 
+                    "business-certificates", 
+                    cancellationToken);
+            }
+
             var dealership = new Dealership
             {
                 Name = request.CompanyName ?? string.Empty,
@@ -89,7 +112,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
                 PhoneNumber = user.PhoneNumber ?? "",
                 Website = "",
                 CompanyUniqueNumber = request.CompanyUniqueNumber ?? string.Empty,
-                BusinessCertificatePath = request.BusinessCertificatePath ?? string.Empty,
+                BusinessCertificatePath = businessCertificatePath,
                 Location = request.Location ?? string.Empty,
                 UserId = user.Id,
                 CreatedAt = DateTime.UtcNow
@@ -110,12 +133,20 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
         // Generate token
         var token = _tokenGenerator.GenerateToken(user);
 
+        // Determine if approval is required
+        bool requiresApproval = user.Role == UserRole.Dealership;
+        string? approvalMessage = requiresApproval 
+            ? "Your dealership account has been created successfully and is pending admin approval. You will be able to access your account once approved." 
+            : null;
+
         return new AuthResponse(
             user.Id,
             user.Email,
             user.FirstName,
             user.LastName,
             user.Role,
-            token);
+            token,
+            requiresApproval,
+            approvalMessage);
     }
 }

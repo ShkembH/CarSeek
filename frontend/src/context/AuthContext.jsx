@@ -42,6 +42,14 @@ export const AuthProvider = ({ children }) => {
       const response = await apiService.login(email, password);
       console.log('🔐 [AuthContext] Login response:', response);
 
+      // Check if this is a dealership user that needs approval
+      if (response.role === 1 || response.role === 'Dealership') {
+        // For dealership users, we need to check if they're approved
+        // This would require an additional API call to check approval status
+        // For now, we'll allow login but the backend should handle this
+        console.log('🏢 [AuthContext] Dealership user logging in');
+      }
+
       // Create user object from response
       const userData = {
         id: response.id,
@@ -75,7 +83,17 @@ export const AuthProvider = ({ children }) => {
       const response = await apiService.register(userData);
       console.log('🔐 [AuthContext] Register response:', response);
 
-      // Create user object from response
+      // Check if approval is required
+      if (response.requiresApproval) {
+        // Don't set user as logged in if approval is required
+        return { 
+          success: true, 
+          requiresApproval: true, 
+          approvalMessage: response.approvalMessage 
+        };
+      }
+
+      // Create user object from response (only for immediate access)
       const userObj = {
         id: response.id,
         email: response.email,
@@ -86,7 +104,7 @@ export const AuthProvider = ({ children }) => {
 
       console.log('👤 [AuthContext] User object created:', userObj);
 
-      // Store token and user data
+      // Store token and user data (only for immediate access)
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(userObj));
 

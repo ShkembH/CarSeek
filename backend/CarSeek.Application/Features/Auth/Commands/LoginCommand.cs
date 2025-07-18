@@ -43,6 +43,31 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponse>
             throw new AuthenticationException("Invalid email or password");
         }
 
+        // Check if user is active
+        if (!user.IsActive)
+        {
+            if (user.Role == UserRole.Dealership)
+            {
+                throw new AuthenticationException("Your dealership account is pending approval. Please wait for admin approval before logging in.");
+            }
+            else
+            {
+                throw new AuthenticationException("Your account has been deactivated. Please contact support.");
+            }
+        }
+
+        // For dealership users, check if they're approved
+        if (user.Role == UserRole.Dealership)
+        {
+            var dealership = await _context.Dealerships
+                .FirstOrDefaultAsync(d => d.UserId == user.Id, cancellationToken);
+            
+            if (dealership == null || !dealership.IsApproved)
+            {
+                throw new AuthenticationException("Your dealership account is pending approval. Please wait for admin approval before logging in.");
+            }
+        }
+
         // Log the activity
         await _activityLogger.LogActivityAsync(
             $"User logged in: {user.FirstName} {user.LastName} ({user.Email})",

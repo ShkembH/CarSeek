@@ -1,6 +1,33 @@
 const API_BASE_URL = 'http://localhost:5193/api';
 
 class ApiService {
+  async approveDealership(id) {
+    const response = await fetch(`${this.baseURL}/Admin/dealerships/${id}/approve`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return { success: true };
+  }
+
+  async rejectDealership(id) {
+    const response = await fetch(`${this.baseURL}/Admin/dealerships/${id}/reject`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return { success: true };
+  }
   constructor() {
     this.baseURL = API_BASE_URL;
   }
@@ -83,25 +110,84 @@ class ApiService {
   }
 
   async register(userData) {
-    // If registering a dealership, ensure all required fields are sent
-    const isDealership = userData.role === 1 || userData.role === 'Dealership';
-    let payload = { ...userData };
-    if (isDealership) {
-      payload = {
-        ...payload,
-        companyName: userData.companyName || '',
-        companyUniqueNumber: userData.companyUniqueNumber || '',
-        location: userData.location || '',
-        businessCertificatePath: userData.businessCertificate?.name || '' // just the file name for now
-      };
+    console.log('🔐 [API] Calling register with data:', userData);
+    
+    // Create FormData for file upload
+    const formData = new FormData();
+    
+    // Add all text fields
+    formData.append('email', userData.email);
+    formData.append('password', userData.password);
+    formData.append('firstName', userData.firstName);
+    formData.append('lastName', userData.lastName);
+    formData.append('phoneNumber', userData.phoneNumber || '');
+    formData.append('country', userData.country || '');
+    formData.append('city', userData.city || '');
+    formData.append('role', userData.role);
+    
+    // Add dealership-specific fields
+    if (userData.role === 1 || userData.role === 'Dealership') {
+      formData.append('companyName', userData.companyName || '');
+      formData.append('companyUniqueNumber', userData.companyUniqueNumber || '');
+      formData.append('location', userData.location || '');
+      
+      // Add business certificate file if provided
+      if (userData.businessCertificate) {
+        formData.append('businessCertificate', userData.businessCertificate);
+      }
     }
-    console.log('🔐 [API] Calling register with data:', payload);
-    const response = await this.request('/Auth/register', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-    console.log('🔐 [API] Register response:', response);
-    return response;
+    
+    // Make the request with FormData
+    const token = localStorage.getItem('token');
+    const url = `${this.baseURL}/Auth/register`;
+    
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorText = await response.text();
+          if (errorText) {
+            try {
+              const errorJson = JSON.parse(errorText);
+              if (errorJson) {
+                if (Array.isArray(errorJson.errors)) {
+                  errorMessage = errorJson.errors.join(' ');
+                } else if (typeof errorJson.errors === 'object' && errorJson.errors !== null) {
+                  errorMessage = Object.values(errorJson.errors).flat().join(' ');
+                } else if (errorJson.message) {
+                  errorMessage = errorJson.message;
+                } else if (typeof errorJson === 'string') {
+                  errorMessage = errorJson;
+                }
+              }
+            } catch {
+              errorMessage = errorText;
+            }
+          }
+        } catch {}
+        throw new Error(errorMessage);
+      }
+
+      const text = await response.text();
+      if (!text) {
+        return { success: true };
+      }
+
+      const result = JSON.parse(text);
+      console.log('🔐 [API] Register response:', result);
+      return result;
+    } catch (error) {
+      console.error('API request failed:', error);
+      throw error;
+    }
   }
 
   // Car Listings endpoints

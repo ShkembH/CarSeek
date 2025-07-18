@@ -1,4 +1,5 @@
 using CarSeek.Domain.Enums;
+using Microsoft.AspNetCore.Http;
 
 namespace CarSeek.Application.Features.Auth.Common;
 
@@ -14,4 +15,4 @@ public record RegisterRequest(
     string? CompanyName,
     string? CompanyUniqueNumber,
     string? Location,
-    string? BusinessCertificatePath);
+    IFormFile? BusinessCertificate);
