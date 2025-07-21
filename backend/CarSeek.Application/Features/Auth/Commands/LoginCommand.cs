@@ -33,9 +33,9 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponse>
 
     public async Task<AuthResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        // Find user by email
+        // Find user by email (case insensitive)
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
+            .FirstOrDefaultAsync(u => u.Email.ToLower() == request.Email.ToLower(), cancellationToken);
 
         // Check if user exists and verify password
         if (user == null || !_passwordHasher.VerifyPassword(request.Password, user.PasswordHash))

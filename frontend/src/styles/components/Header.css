@@ -6,6 +6,21 @@
   border-bottom: 1px solid #e5e7eb;
   padding: 12px 0;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #4A90E2;
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.logo-image {
+  width: 32px;
+  height: 32px;
+}
   position: sticky;
   top: 0;
   left: 0;
@@ -45,17 +60,34 @@
 }
 
 .header-logo-text {
-  font-size: 24px;
   font-weight: bold;
-  color: #232946;
-  font-family: Arial, sans-serif;
+  font-size: 24px;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .header-logo-accent {
-  font-size: 24px;
-  font-weight: bold;
-  color: #6b7280;
-  font-family: Arial, sans-serif;
+  color: #4A90E2;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.logo-container:hover {
+  opacity: 0.9;
+}
+
+.logo-image {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 /* Navigation styles */

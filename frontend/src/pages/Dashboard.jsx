@@ -276,6 +276,14 @@ const Dashboard = () => {
     }
   };
 
+  const handleViewUser = (userId) => {
+    navigate(`/admin/users/${userId}`);
+  };
+
+  const handleEditUser = (userId) => {
+    navigate(`/admin/users/${userId}/edit`);
+  };
+
   // --- Conditional Renders ---
   if (!isAuthenticated) {
     return (
@@ -473,8 +481,8 @@ const Dashboard = () => {
                 </td>
                 <td>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</td>
                 <td>
-                  <button className="admin-dashboard-btn" style={{ padding: '4px 12px', fontSize: 13, marginRight: 6 }}>View</button>
-                  <button className="admin-dashboard-btn" style={{ padding: '4px 12px', fontSize: 13, marginRight: 6 }}>Edit</button>
+                  <button className="admin-dashboard-btn" style={{ padding: '4px 12px', fontSize: 13, marginRight: 6 }} onClick={() => handleViewUser(user.id)}>View</button>
+                  <button className="admin-dashboard-btn" style={{ padding: '4px 12px', fontSize: 13, marginRight: 6 }} onClick={() => handleEditUser(user.id)}>Edit</button>
                   <button className="admin-dashboard-btn delete" style={{ padding: '4px 12px', fontSize: 13 }} onClick={() => handleDeleteUser(user.id)}>Delete</button>
                 </td>
               </tr>
@@ -527,8 +535,8 @@ const Dashboard = () => {
                 </td>
                 <td>{dealership.createdAt ? new Date(dealership.createdAt).toLocaleDateString() : 'N/A'}</td>
                 <td>
-                  <button className="admin-dashboard-btn" style={{ padding: '4px 12px', fontSize: 13, marginRight: 6 }}>View</button>
-                  <button className="admin-dashboard-btn" style={{ padding: '4px 12px', fontSize: 13, marginRight: 6 }}>Edit</button>
+                  <button className="admin-dashboard-btn" style={{ padding: '4px 12px', fontSize: 13, marginRight: 6 }} onClick={() => handleViewUser(dealership.id)}>View</button>
+                  <button className="admin-dashboard-btn" style={{ padding: '4px 12px', fontSize: 13, marginRight: 6 }} onClick={() => handleEditUser(dealership.id)}>Edit</button>
                   <button className="admin-dashboard-btn delete" style={{ padding: '4px 12px', fontSize: 13 }}>Delete</button>
                 </td>
               </tr>

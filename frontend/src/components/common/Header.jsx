@@ -100,9 +100,9 @@ const Header = () => {
       <div className="header-container">
         {/* Left: Logo */}
         <div className="header-logo">
-          <a href="/" className="header-logo-link">
-            <span className="header-logo-text">Car</span>
-            <span className="header-logo-accent">Seek</span>
+          <a href="/" className="logo-container">
+            <img src="/assets/car-logo.svg" alt="CarSeek Logo" className="logo-image" />
+            <span className="header-logo-text">Car<span className="header-logo-accent">Seek</span></span>
           </a>
         </div>
 

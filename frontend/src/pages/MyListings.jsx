@@ -8,6 +8,9 @@ const MyListings = () => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [listingToDelete, setListingToDelete] = useState(null);
+
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -21,7 +24,12 @@ const MyListings = () => {
       const response = await apiService.getMyListings();
       console.log('My listings response:', response); // Add this line to debug
       // Check for both uppercase and lowercase property names
-      setListings(response.Items || response.items || []);
+      const items = response.Items || response.items || [];
+      console.log('Listings items:', items); // Debug the items array
+      items.forEach(listing => {
+        console.log('Listing ID:', listing.id || listing.Id); // Debug each listing's ID
+      });
+      setListings(items);
     } catch (error) {
       console.error('Error fetching my listings:', error);
       setError('Failed to load your listings');
@@ -30,15 +38,22 @@ const MyListings = () => {
     }
   };
 
-  const handleDelete = async (listingId) => {
-    if (window.confirm('Are you sure you want to delete this listing?')) {
-      try {
-        await apiService.deleteCarListing(listingId);
-        setListings(listings.filter(listing => listing.id !== listingId));
-      } catch (error) {
-        console.error('Error deleting listing:', error);
-        alert('Failed to delete listing');
-      }
+  const handleDeleteClick = (listingId) => {
+    setListingToDelete(listingId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteListing = async () => {
+    if (!listingToDelete) return;
+    try {
+      await apiService.deleteCarListing(listingToDelete);
+      setListings(listings.filter(listing => listing.id !== listingToDelete));
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+      alert('Failed to delete listing');
+    } finally {
+      setShowDeleteModal(false);
+      setListingToDelete(null);
     }
   };
 
@@ -116,15 +131,18 @@ const MyListings = () => {
                     </div>
                     <div className="card-footer">
                       <div className="btn-group w-100">
-                        <a href={`/listings/${listing.id}`} className="btn btn-outline-primary">
+                        <a href={`/listings/${listing.Id || listing.id}`} className="btn btn-outline-primary">
                           View
                         </a>
-                        <button className="btn btn-outline-secondary">
+                        <a 
+                          href={`/edit-listing/${listing.Id || listing.id}`}
+                          className="btn btn-outline-secondary"
+                        >
                           Edit
-                        </button>
+                        </a>
                         <button
                           className="btn btn-outline-danger"
-                          onClick={() => handleDelete(listing.id)}
+                          onClick={() => handleDeleteClick(listing.id)}
                         >
                           Delete
                         </button>
@@ -135,6 +153,21 @@ const MyListings = () => {
               ))}
             </div>
           )}
+
+          {showDeleteModal && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <h3>Confirm Deletion</h3>
+                <p>Are you sure you want to delete this listing? This action cannot be undone.</p>
+                <div className="modal-actions">
+                  <button className="admin-dashboard-btn delete" onClick={confirmDeleteListing}>Delete</button>
+                  <button className="admin-dashboard-btn" onClick={() => setShowDeleteModal(false)}>Cancel</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+
         </div>
       </div>
     </div>

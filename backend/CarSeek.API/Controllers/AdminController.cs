@@ -7,6 +7,7 @@ using CarSeek.Application.Features.CarListings.DTOs;
 using CarSeek.Domain.Enums;
 using CarSeek.Application.Features.Dealerships.DTOs;
 using CarSeek.Application.Common.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarSeek.API.Controllers;
 
@@ -30,6 +31,44 @@ public class AdminController : ApiControllerBase
     public async Task<ActionResult<List<UserDto>>> GetUsers()
     {
         return await Mediator.Send(new GetUsersQuery());
+    }
+
+    [HttpGet("users/{id}")]
+    public async Task<ActionResult<UserDto>> GetUserById(Guid id)
+    {
+        var user = await _context.Users.Include(u => u.Dealership).FirstOrDefaultAsync(u => u.Id == id);
+        if (user == null)
+            return NotFound();
+        var dto = new UserDto
+        {
+            Id = user.Id,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email,
+            Role = user.Role,
+            CreatedAt = user.CreatedAt,
+            IsActive = user.IsActive,
+            PhoneNumber = user.PhoneNumber,
+            Country = user.Country,
+            City = user.City
+        };
+        if (user.Role == CarSeek.Domain.Enums.UserRole.Dealership && user.Dealership != null)
+        {
+            dto.CompanyName = user.Dealership.Name;
+            dto.CompanyUniqueNumber = user.Dealership.CompanyUniqueNumber;
+            dto.Location = user.Dealership.Location;
+            dto.DealershipPhoneNumber = user.Dealership.PhoneNumber;
+            dto.Website = user.Dealership.Website;
+            dto.BusinessCertificatePath = user.Dealership.BusinessCertificatePath;
+            dto.Description = user.Dealership.Description;
+            dto.AddressStreet = user.Dealership.Address?.Street;
+            dto.AddressCity = user.Dealership.Address?.City;
+            dto.AddressState = user.Dealership.Address?.State;
+            dto.AddressPostalCode = user.Dealership.Address?.PostalCode;
+            dto.AddressCountry = user.Dealership.Address?.Country;
+            dto.IsDealershipApproved = user.Dealership.IsApproved;
+        }
+        return Ok(dto);
     }
 
     [HttpGet("listings")]

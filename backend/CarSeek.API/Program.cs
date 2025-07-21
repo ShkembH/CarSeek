@@ -110,8 +110,7 @@ public class Program
         using (var scope = app.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            // Force database recreation to include new columns
-            context.Database.EnsureDeleted();
+            // Only create the database if it doesn't exist
             context.Database.EnsureCreated();
         }
 

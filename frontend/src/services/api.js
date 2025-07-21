@@ -415,8 +415,48 @@ class ApiService {
       method: 'DELETE',
     });
   }
+
+  async updateCarListing(id, data) {
+    if (data instanceof FormData) {
+      return this.request(`/CarListings/${id}`, {
+        method: 'PUT',
+        headers: {
+          // Remove Content-Type header to let the browser set it with the boundary
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: data
+      });
+    } else {
+      return this.request(`/CarListings/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+    }
+  }
+
+  async getCarListingById(id) {
+    try {
+      console.log('Fetching car listing with ID:', id); // Debug log
+      const response = await this.request(`/CarListings/${id}`, {
+        method: 'GET'
+      });
+      console.log('Received response:', response); // Debug log
+      return response;
+    } catch (error) {
+      console.error('Error fetching car listing:', error);
+      throw error;
+    }
+  }
 }
 
 export const apiService = new ApiService();
 export const getProfile = (...args) => apiService.getProfile(...args);
 export const updateProfile = (...args) => apiService.updateProfile(...args);
+
+apiService.getUserById = async (userId) => {
+  return await apiService.request(`/Admin/users/${userId}`);
+};
+
+apiService.getCarListingsByUser = async (userId) => {
+  return await apiService.request(`/CarListings/user/${userId}`);
+};

@@ -17,6 +17,9 @@ import SavedListings from './pages/SavedListings';
 import MyProfile from './pages/MyProfile';
 import Inbox from './pages/Inbox';
 import PendingApproval from './pages/PendingApproval';
+import EditListing from './pages/EditListing';
+import AdminUserDetails from './pages/AdminUserDetails';
+import AdminEditUser from './pages/AdminEditUser';
 import './App.css';
 
 function App() {
@@ -47,6 +50,11 @@ function App() {
                   <AddListing />
                 </ProtectedRoute>
               } />
+              <Route path="/edit-listing/:id" element={
+                <ProtectedRoute>
+                  <EditListing />
+                </ProtectedRoute>
+              } />
               <Route path="/my-listings" element={
                 <ProtectedRoute>
                   <MyListings />
@@ -57,6 +65,16 @@ function App() {
               <Route path="/dashboard" element={
                 <AdminRoute>
                   <Dashboard />
+                </AdminRoute>
+              } />
+              <Route path="/admin/users/:userId" element={
+                <AdminRoute>
+                  <AdminUserDetails />
+                </AdminRoute>
+              } />
+              <Route path="/admin/users/:userId/edit" element={
+                <AdminRoute>
+                  <AdminEditUser />
                 </AdminRoute>
               } />
             </Routes>

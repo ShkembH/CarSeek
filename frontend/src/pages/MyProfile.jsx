@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getProfile, updateProfile } from '../services/api';
-import ProfileForm from '../components/profile/ProfileForm';
+import { ProfileForm, DealershipProfileForm } from '../components/profile/ProfileForm';
 import '../styles/pages/MyProfile.css';
 
 const MyProfile = () => {
@@ -69,7 +69,11 @@ const MyProfile = () => {
         <h2>Profile Settings</h2>
         {success && <div className="my-profile-success">{success}</div>}
         {error && <div className="my-profile-error">{error}</div>}
-        <ProfileForm profile={profile} onUpdate={handleUpdate} />
+        {profile.role === 'Dealership' ? (
+          <DealershipProfileForm profile={profile} onUpdate={handleUpdate} />
+        ) : (
+          <ProfileForm profile={profile} onUpdate={handleUpdate} />
+        )}
       </div>
       {/* Right: Placeholder for future use */}
       <div className="my-profile-right"></div>
