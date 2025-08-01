@@ -447,6 +447,13 @@ class ApiService {
       throw error;
     }
   }
+
+  async updateUserByAdmin(userId, data) {
+    return this.request(`/Admin/users/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
 }
 
 export const apiService = new ApiService();

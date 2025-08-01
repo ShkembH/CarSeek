@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarSeek.API.Controllers;
 
+[ApiController]
+[Route("api/[controller]")]
 [Authorize(Roles = "Admin")]
 public class AdminController : ApiControllerBase
 {
@@ -69,6 +71,47 @@ public class AdminController : ApiControllerBase
             dto.IsDealershipApproved = user.Dealership.IsApproved;
         }
         return Ok(dto);
+    }
+
+    [HttpPut("users/{id}")]
+    public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserRequest request)
+    {
+        var user = await _context.Users.Include(u => u.Dealership).FirstOrDefaultAsync(u => u.Id == id);
+        if (user == null)
+            return NotFound();
+
+        // Debug: log incoming request
+        Console.WriteLine($"[ADMIN UPDATE] Incoming request for user {id}: {System.Text.Json.JsonSerializer.Serialize(request)}");
+
+        // Update common fields
+        user.PhoneNumber = request.PhoneNumber ?? user.PhoneNumber;
+        user.Country = request.Country ?? user.Country;
+        user.City = request.City ?? user.City;
+        user.IsActive = request.IsActive ?? user.IsActive;
+
+        // Debug: log updated fields
+        Console.WriteLine($"[ADMIN UPDATE] Updated user fields: Phone={user.PhoneNumber}, Country={user.Country}, City={user.City}, IsActive={user.IsActive}");
+
+        if (user.Role == CarSeek.Domain.Enums.UserRole.Individual)
+        {
+            user.FirstName = request.FirstName ?? user.FirstName;
+            user.LastName = request.LastName ?? user.LastName;
+            Console.WriteLine($"[ADMIN UPDATE] Individual: FirstName={user.FirstName}, LastName={user.LastName}");
+        }
+        else if (user.Role == CarSeek.Domain.Enums.UserRole.Dealership && user.Dealership != null)
+        {
+            user.Dealership.Name = request.CompanyName ?? user.Dealership.Name;
+            user.Dealership.CompanyUniqueNumber = request.CompanyUniqueNumber ?? user.Dealership.CompanyUniqueNumber;
+            user.Dealership.Location = request.Location ?? user.Dealership.Location;
+            user.Dealership.PhoneNumber = request.DealershipPhoneNumber ?? user.Dealership.PhoneNumber;
+            user.Dealership.Website = request.Website ?? user.Dealership.Website;
+            user.Dealership.Description = request.Description ?? user.Dealership.Description;
+            Console.WriteLine($"[ADMIN UPDATE] Dealership: Name={user.Dealership.Name}, UniqueNumber={user.Dealership.CompanyUniqueNumber}, Location={user.Dealership.Location}, Phone={user.Dealership.PhoneNumber}, Website={user.Dealership.Website}, Description={user.Dealership.Description}");
+        }
+
+        await _context.SaveChangesAsync(default);
+        Console.WriteLine($"[ADMIN UPDATE] SaveChangesAsync called for user {id}");
+        return Ok();
     }
 
     [HttpGet("listings")]

@@ -97,37 +97,28 @@ const EditListing = () => {
     setError(null);
 
     try {
-      // First, handle image changes
-      const formDataWithFiles = new FormData();
-      
-      // Add all form fields
-      Object.entries(formData).forEach(([key, value]) => {
-        formDataWithFiles.append(key, value);
-      });
+      // Prepare the update request as JSON
+      const model = (formData.model || '').trim();
+      const year = formData.year ? parseInt(formData.year) : '';
+      const price = formData.price ? parseFloat(formData.price) : '';
+      const mileage = formData.mileage ? parseInt(formData.mileage) : '';
 
-      // Add new images
-      newImages.forEach((file, index) => {
-        formDataWithFiles.append(`newImages`, file);
-        // If this is set to be the primary image, send its index
-        if (primaryImageId === `new-${index}`) {
-          formDataWithFiles.append('primaryImageIndex', index.toString());
-        }
-      });
+      const updateRequest = {
+        title: formData.title,
+        description: formData.description,
+        price,
+        make: formData.make,
+        model,
+        year,
+        mileage,
+        color: formData.color,
+        fuelType: formData.fuelType,
+        transmission: formData.transmission
+      };
 
-      // Add list of images to remove
-      removedImages.forEach(imageId => {
-        formDataWithFiles.append('removedImages', imageId);
-      });
-
-      // Add remaining existing images and mark primary
-      images.forEach(image => {
-        formDataWithFiles.append('existingImages', image.id);
-        if (image.id === primaryImageId) {
-          formDataWithFiles.append('primaryImageId', image.id);
-        }
-      });
-
-      const updatedListing = await apiService.updateCarListing(id, formDataWithFiles);
+      // Send JSON update request
+      const updatedListing = await apiService.updateCarListing(id, { request: updateRequest });
+      // (Optional) handle image uploads in a separate request if needed
       navigate(`/listings/${updatedListing.id}`);
     } catch (error) {
       setError('Failed to update listing. Please try again.');

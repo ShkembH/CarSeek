@@ -250,18 +250,6 @@ const Register = () => {
                 />
               </div>
               <div className="auth-field">
-                <label className="auth-label">Location</label>
-                <input
-                  type="text"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  required={formData.role === 1}
-                  className="auth-input"
-                  placeholder="Location"
-                />
-              </div>
-              <div className="auth-field">
                 <label className="auth-label">Email</label>
                 <input
                   type="email"
@@ -325,6 +313,18 @@ const Register = () => {
                     <option key={city} value={city}>{city}</option>
                   ))}
                 </select>
+              </div>
+              <div className="auth-field">
+                <label className="auth-label">Street</label>
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  required={formData.role === 1}
+                  className="auth-input"
+                  placeholder="Street"
+                />
               </div>
             </>
           ) : (
@@ -411,7 +411,7 @@ const Register = () => {
           {/* Common fields for both roles */}
           <div className="auth-field">
             <label className="auth-label">Password</label>
-            <div className="auth-password-input">
+            <div className="auth-password-wrapper">
               <input
                 type={showPassword ? 'text' : 'password'}
                 name="password"
@@ -428,7 +428,7 @@ const Register = () => {
           </div>
           <div className="auth-field">
             <label className="auth-label">Confirm Password</label>
-            <div className="auth-password-input">
+            <div className="auth-password-wrapper">
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
                 name="confirmPassword"

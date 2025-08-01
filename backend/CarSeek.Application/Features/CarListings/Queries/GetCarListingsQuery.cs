@@ -22,15 +22,30 @@ public class GetCarListingsQueryHandler : IRequestHandler<GetCarListingsQuery, P
 {
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
+    private readonly ICacheService _cacheService;
 
-    public GetCarListingsQueryHandler(IApplicationDbContext context, IMapper mapper)
+    public GetCarListingsQueryHandler(IApplicationDbContext context, IMapper mapper, ICacheService cacheService)
     {
         _context = context;
         _mapper = mapper;
+        _cacheService = cacheService;
     }
 
     public async Task<PaginatedCarListingsResponse> Handle(GetCarListingsQuery request, CancellationToken cancellationToken)
     {
+        // Generate cache key based on query parameters
+        var cacheKey = GenerateCacheKey(request);
+        
+        // Try to get from cache first
+        var cachedResult = await _cacheService.GetAsync<PaginatedCarListingsResponse>(cacheKey);
+        if (cachedResult != null)
+        {
+            Console.WriteLine($"Cache hit for key: {cacheKey}");
+            return cachedResult;
+        }
+
+        Console.WriteLine($"Cache miss for key: {cacheKey}, querying database...");
+
         // Start with a queryable and then apply filters
         var carListings = _context.CarListings
             .Include(c => c.Dealership)
@@ -89,22 +104,37 @@ public class GetCarListingsQueryHandler : IRequestHandler<GetCarListingsQuery, P
         foreach (var listing in paginatedListings)
         {
             Console.WriteLine($"Listing: {listing.Id} - {listing.Title} - Status: {listing.Status}");
-            Console.WriteLine($"  Images count: {listing.Images?.Count ?? 0}");
-            if (listing.Images != null)
-            {
-                foreach (var image in listing.Images)
-                {
-                    Console.WriteLine($"    Image: {image.ImageUrl} (Primary: {image.IsPrimary})");
-                }
-            }
         }
 
-        return new PaginatedCarListingsResponse
+        var result = new PaginatedCarListingsResponse
         {
-            Items = _mapper.Map<IEnumerable<CarListingDto>>(paginatedListings),
+            Items = _mapper.Map<List<CarListingDto>>(paginatedListings),
             TotalCount = totalCount,
             PageNumber = request.PageNumber,
             TotalPages = totalPages
         };
+
+        // Cache the result for 5 minutes
+        await _cacheService.SetAsync(cacheKey, result, TimeSpan.FromMinutes(5));
+
+        return result;
+    }
+
+    private string GenerateCacheKey(GetCarListingsQuery request)
+    {
+        var parameters = new[]
+        {
+            request.PageNumber.ToString(),
+            request.PageSize.ToString(),
+            request.SearchTerm ?? "",
+            request.Make ?? "",
+            request.Model ?? "",
+            request.MinYear?.ToString() ?? "",
+            request.MaxYear?.ToString() ?? "",
+            request.MinPrice?.ToString() ?? "",
+            request.MaxPrice?.ToString() ?? ""
+        };
+
+        return $"car_listings:{string.Join(":", parameters)}";
     }
 }

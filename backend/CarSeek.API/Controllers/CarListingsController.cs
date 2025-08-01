@@ -46,7 +46,7 @@ public class CarListingsController : ApiControllerBase
     // Only listing owner can update
     [HttpPut("{id}")]
     [Authorize] // Sellers need auth to update their listings
-    public async Task<ActionResult<CarListingDto>> Update(Guid id, UpdateCarListingRequest request)
+    public async Task<ActionResult<CarListingDto>> Update(Guid id, [FromBody] UpdateCarListingRequest request)
     {
         return await Mediator.Send(new UpdateCarListingCommand(id, request));
     }

@@ -112,6 +112,52 @@ public class Program
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             // Only create the database if it doesn't exist
             context.Database.EnsureCreated();
+            
+            // Apply indexes manually if they don't exist
+            try
+            {
+                // Create indexes for better performance
+                context.Database.ExecuteSqlRaw(@"
+                    CREATE INDEX IF NOT EXISTS IX_CarListing_Status ON CarSeekCarListings (Status);
+                    CREATE INDEX IF NOT EXISTS IX_CarListing_Make ON CarSeekCarListings (Make);
+                    CREATE INDEX IF NOT EXISTS IX_CarListing_Model ON CarSeekCarListings (Model);
+                    CREATE INDEX IF NOT EXISTS IX_CarListing_Year ON CarSeekCarListings (Year);
+                    CREATE INDEX IF NOT EXISTS IX_CarListing_Price ON CarSeekCarListings (Price);
+                    CREATE INDEX IF NOT EXISTS IX_CarListing_UserId ON CarSeekCarListings (UserId);
+                    CREATE INDEX IF NOT EXISTS IX_CarListing_DealershipId ON CarSeekCarListings (DealershipId);
+                    CREATE INDEX IF NOT EXISTS IX_CarListing_Status_Make_Model ON CarSeekCarListings (Status, Make, Model);
+                    CREATE INDEX IF NOT EXISTS IX_CarListing_Status_Year_Price ON CarSeekCarListings (Status, Year, Price);
+                    CREATE INDEX IF NOT EXISTS IX_CarListing_Status_UserId ON CarSeekCarListings (Status, UserId);
+                ");
+                
+                // Create indexes for User table
+                context.Database.ExecuteSqlRaw(@"
+                    CREATE INDEX IF NOT EXISTS IX_User_Role ON CarSeekUsers (Role);
+                    CREATE INDEX IF NOT EXISTS IX_User_Status ON CarSeekUsers (Status);
+                    CREATE INDEX IF NOT EXISTS IX_User_IsActive ON CarSeekUsers (IsActive);
+                    CREATE INDEX IF NOT EXISTS IX_User_Role_IsActive ON CarSeekUsers (Role, IsActive);
+                    CREATE INDEX IF NOT EXISTS IX_User_Status_IsActive ON CarSeekUsers (Status, IsActive);
+                ");
+                
+                // Create indexes for ChatMessage table
+                context.Database.ExecuteSqlRaw(@"
+                    CREATE INDEX IF NOT EXISTS IX_ChatMessage_SenderId ON ChatMessages (SenderId);
+                    CREATE INDEX IF NOT EXISTS IX_ChatMessage_RecipientId ON ChatMessages (RecipientId);
+                    CREATE INDEX IF NOT EXISTS IX_ChatMessage_ListingId ON ChatMessages (ListingId);
+                    CREATE INDEX IF NOT EXISTS IX_ChatMessage_CreatedAt ON ChatMessages (CreatedAt);
+                    CREATE INDEX IF NOT EXISTS IX_ChatMessage_IsRead ON ChatMessages (IsRead);
+                    CREATE INDEX IF NOT EXISTS IX_ChatMessage_SenderId_RecipientId_ListingId ON ChatMessages (SenderId, RecipientId, ListingId);
+                    CREATE INDEX IF NOT EXISTS IX_ChatMessage_RecipientId_IsRead ON ChatMessages (RecipientId, IsRead);
+                    CREATE INDEX IF NOT EXISTS IX_ChatMessage_ListingId_CreatedAt ON ChatMessages (ListingId, CreatedAt);
+                ");
+                
+                Console.WriteLine("✅ Database indexes created successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ Warning: Could not create indexes: {ex.Message}");
+                Console.WriteLine("Indexes may already exist or database doesn't support them");
+            }
         }
 
         // Configure the HTTP request pipeline.

@@ -10,6 +10,8 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import brandLogos from '../assets/brands';
 import '../styles/pages/Home.css';
+import carData from '../carData';
+import carBackground from '../assets/car-background.jpg';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -25,10 +27,13 @@ const Home = () => {
   const carsNextRef = useRef(null);
   // Search form state (move here to avoid conditional hook call)
   const [selectedBrand, setSelectedBrand] = useState('');
-  const [selectedModel, setSelectedModel] = useState('');
-  const [selectedMileage, setSelectedMileage] = useState('Any');
+  const [selectedSeries, setSelectedSeries] = useState('');
+  const [selectedClass, setSelectedClass] = useState('');
   const [selectedYear, setSelectedYear] = useState('Any');
   const [selectedPrice, setSelectedPrice] = useState('Any');
+
+  const yearOptions = ['Any', '2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017', '2016', '2015', '2010-2014', '2005-2009', '2000-2004', 'Before 2000'];
+  const priceOptions = ['Any', 'Up to €5,000', 'Up to €10,000', 'Up to €15,000', 'Up to €20,000', 'Up to €30,000', 'Up to €50,000', '€50,000+'];
 
   useEffect(() => {
     fetchCarListings();
@@ -87,54 +92,33 @@ const Home = () => {
     navigate('/listings?advanced=1'); // Pass a query param to open advanced filter
   };
 
-  // Hardcoded brands and models
-  const brandOptions = [
-    {
-      name: 'Toyota',
-      models: ['Corolla', 'Camry', 'RAV4', 'Yaris', 'Prius', 'Highlander', 'Land Cruiser', 'C-HR', 'Avensis', 'Auris', 'Verso', 'Aygo', 'Supra', 'Celica', 'Hilux']
-    },
-    {
-      name: 'BMW',
-      models: ['3 Series', '5 Series', '7 Series', 'X1', 'X3', 'X5', 'X6', 'X7', 'M3', 'M4', 'M5', 'Z4', 'i3', 'i8', '2 Series']
-    },
-    {
-      name: 'Mercedes-Benz',
-      models: ['A-Class', 'B-Class', 'C-Class', 'E-Class', 'S-Class', 'GLA', 'GLC', 'GLE', 'GLS', 'CLA', 'CLS', 'SLK', 'G-Class', 'Vito', 'Sprinter']
-    },
-    {
-      name: 'Honda',
-      models: ['Civic', 'Accord', 'CR-V', 'HR-V', 'Jazz', 'Fit', 'Odyssey', 'Pilot', 'Insight', 'Prelude', 'S2000', 'Legend', 'Stream', 'FR-V', 'Element']
-    },
-    {
-      name: 'Audi',
-      models: ['A1', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'Q2', 'Q3', 'Q5', 'Q7', 'Q8', 'TT', 'S3', 'RS6']
-    },
-    {
-      name: 'Volkswagen',
-      models: ['Golf', 'Passat', 'Polo', 'Tiguan', 'Touareg', 'Jetta', 'Touran', 'Sharan', 'Arteon', 'T-Roc', 'T-Cross', 'Scirocco', 'Up!', 'Caddy', 'Amarok']
-    }
-  ];
-
-  const mileageOptions = ['Any', '0-50,000', '50,001-100,000', '100,001-150,000', '150,001-200,000', '200,001+'];
-  const yearOptions = ['Any', '2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017', '2016', '2015', '2010-2014', '2005-2009', '2000-2004', 'Before 2000'];
-  const priceOptions = ['Any', 'Up to €5,000', 'Up to €10,000', 'Up to €15,000', 'Up to €20,000', 'Up to €30,000', 'Up to €50,000', '€50,000+'];
+  const getAvailableSeries = () => {
+    return selectedBrand ? Object.keys(carData[selectedBrand] || {}) : [];
+  };
+  const getAvailableClasses = () => {
+    return selectedBrand && selectedSeries ? carData[selectedBrand][selectedSeries] || [] : [];
+  };
 
   const handleBrandChange = (e) => {
     setSelectedBrand(e.target.value);
-    setSelectedModel(''); // Reset model when brand changes
+    setSelectedSeries('');
+    setSelectedClass('');
   };
-  const handleModelChange = (e) => setSelectedModel(e.target.value);
-  const handleMileageChange = (e) => setSelectedMileage(e.target.value);
+  const handleSeriesChange = (e) => {
+    setSelectedSeries(e.target.value);
+    setSelectedClass('');
+  };
+  const handleClassChange = (e) => setSelectedClass(e.target.value);
   const handleYearChange = (e) => setSelectedYear(e.target.value);
   const handlePriceChange = (e) => setSelectedPrice(e.target.value);
 
   const handleHeroSearch = (e) => {
     e.preventDefault();
-    if (!selectedBrand || !selectedModel) return; // Require brand and model
+    if (!selectedBrand || !selectedSeries) return; // Require brand and series
     const params = new URLSearchParams();
     params.append('make', selectedBrand);
-    params.append('model', selectedModel);
-    if (selectedMileage !== 'Any') params.append('mileage', selectedMileage);
+    params.append('series', selectedSeries);
+    if (selectedClass) params.append('class', selectedClass);
     if (selectedYear !== 'Any') params.append('year', selectedYear);
     if (selectedPrice !== 'Any') params.append('price', selectedPrice);
     navigate(`/listings?${params.toString()}`);
@@ -147,29 +131,40 @@ const Home = () => {
   });
   const fallbackLogo = 'https://via.placeholder.com/80x80?text=Logo';
 
+  // In the Featured Brands section:
+  const featuredBrands = [
+    'Toyota',
+    'BMW',
+    'Mercedes-Benz',
+    'Honda',
+    'Audi',
+    'Volkswagen'
+  ];
+
   return (
     <div className="home-container">
       {/* Hero Section - Car Focused */}
-      <section className="hero-section">
+      <section className="hero-section" style={{ backgroundImage: `url(${carBackground})` }}>
         <div className="hero-search-container">
           <h1 className="hero-title">Drive Something Your Neighbors Will Google</h1>
           <form className="hero-search-form" onSubmit={handleHeroSearch}>
             <div className="hero-search-row">
               <select value={selectedBrand} onChange={handleBrandChange} required className="hero-select">
                 <option value="" disabled>Brand</option>
-                {brandOptions.map(brand => (
-                  <option key={brand.name} value={brand.name}>{brand.name}</option>
+                {Object.keys(carData).sort().map(brand => (
+                  <option key={brand} value={brand}>{brand}</option>
                 ))}
               </select>
-              <select value={selectedModel} onChange={handleModelChange} required className="hero-select" disabled={!selectedBrand}>
-                <option value="" disabled>Model</option>
-                {selectedBrand && brandOptions.find(b => b.name === selectedBrand)?.models.map(model => (
-                  <option key={model} value={model}>{model}</option>
+              <select value={selectedSeries} onChange={handleSeriesChange} required className="hero-select" disabled={!selectedBrand}>
+                <option value="" disabled>{selectedBrand ? 'Series' : 'First select a brand'}</option>
+                {getAvailableSeries().map(series => (
+                  <option key={series} value={series}>{series}</option>
                 ))}
               </select>
-              <select value={selectedMileage} onChange={handleMileageChange} className="hero-select">
-                {mileageOptions.map(opt => (
-                  <option key={opt} value={opt}>{opt === 'Any' ? 'Mileage' : opt}</option>
+              <select value={selectedClass} onChange={handleClassChange} className="hero-select" disabled={!selectedSeries || getAvailableClasses().length === 0}>
+                <option value="">{selectedSeries ? 'Class/Body Type (optional)' : 'First select a series'}</option>
+                {getAvailableClasses().map(carClass => (
+                  <option key={carClass} value={carClass}>{carClass}</option>
                 ))}
               </select>
             </div>
@@ -232,24 +227,24 @@ const Home = () => {
               },
             }}
           >
-            {brandOptions.map((brand) => {
+            {featuredBrands.map((brand) => {
               // Robust logo lookup
-              const logoKey = brand.name.toLowerCase().replace(/[-\s]/g, '');
+              const logoKey = brand.toLowerCase().replace(/[-\s]/g, '');
               const logo = brandLogoMap[logoKey] || fallbackLogo;
               if (logo === fallbackLogo) {
-                console.warn('Missing logo for brand:', brand.name, 'Expected key:', logoKey);
+                console.warn('Missing logo for brand:', brand, 'Expected key:', logoKey);
               }
               return (
-                <SwiperSlide key={brand.name}>
+                <SwiperSlide key={brand}>
                   <div
                     className="simplified-card"
-                    onClick={() => handleBrandClick(brand.name)}
+                    onClick={() => handleBrandClick(brand)}
                   >
                     <div className="car-image" style={{ background: '#fff', padding: '8px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '96px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-                      <img src={logo} alt={brand.name + ' logo'} style={{ width: '80px', height: '80px', objectFit: 'contain', background: 'transparent', borderRadius: '8px', display: 'block' }} />
+                      <img src={logo} alt={brand + ' logo'} style={{ width: '80px', height: '80px', objectFit: 'contain', background: 'transparent', borderRadius: '8px', display: 'block' }} />
                     </div>
                     <div className="simplified-info">
-                      <h3 className="car-title">{brand.name}</h3>
+                      <h3 className="car-title">{brand}</h3>
                     </div>
                   </div>
                 </SwiperSlide>

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom'; // Add useLocation
 import { apiService } from '../services/api';
 import '../styles/pages/Listings.css';
+import carData from '../carData';
 
 const Listings = () => {
   const navigate = useNavigate();
@@ -17,8 +18,9 @@ const Listings = () => {
 
   // Filter states
   const [filters, setFilters] = useState({
-    producer: '',
-    model: '',
+    producer: '', // Brand
+    series: '',   // Series/Family
+    carClass: '', // Class/Body Type
     yearRange: '',
     kmRange: '',
     priceRange: '',
@@ -33,34 +35,6 @@ const Listings = () => {
 
 
   // Add hardcoded brand/model options for filter dropdowns
-  const brandOptions = [
-    {
-      name: 'Toyota',
-      models: ['Corolla', 'Camry', 'RAV4', 'Yaris', 'Prius', 'Highlander', 'Land Cruiser', 'C-HR', 'Avensis', 'Auris', 'Verso', 'Aygo', 'Supra', 'Celica', 'Hilux']
-    },
-    {
-      name: 'BMW',
-      models: ['3 Series', '5 Series', '7 Series', 'X1', 'X3', 'X5', 'X6', 'X7', 'M3', 'M4', 'M5', 'Z4', 'i3', 'i8', '2 Series']
-    },
-    {
-      name: 'Mercedes',
-      models: ['A-Class', 'B-Class', 'C-Class', 'E-Class', 'S-Class', 'GLA', 'GLC', 'GLE', 'GLS', 'CLA', 'CLS', 'SLK', 'G-Class', 'Vito', 'Sprinter']
-    },
-    {
-      name: 'Honda',
-      models: ['Civic', 'Accord', 'CR-V', 'HR-V', 'Jazz', 'Fit', 'Odyssey', 'Pilot', 'Insight', 'Prelude', 'S2000', 'Legend', 'Stream', 'FR-V', 'Element']
-    },
-    {
-      name: 'Audi',
-      models: ['A1', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'Q2', 'Q3', 'Q5', 'Q7', 'Q8', 'TT', 'S3', 'RS6']
-    },
-    {
-      name: 'Volkswagen',
-      models: ['Golf', 'Passat', 'Polo', 'Tiguan', 'Touareg', 'Jetta', 'Touran', 'Sharan', 'Arteon', 'T-Roc', 'T-Cross', 'Scirocco', 'Up!', 'Caddy', 'Amarok']
-    }
-  ];
-
-  // Add the same options as in Home.jsx
   const mileageOptions = ['Any', '0-50,000', '50,001-100,000', '100,001-150,000', '150,001-200,000', '200,001+'];
   const yearOptions = ['Any', '2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017', '2016', '2015', '2010-2014', '2005-2009', '2000-2004', 'Before 2000'];
   const priceOptions = ['Any', 'Up to €5,000', 'Up to €10,000', 'Up to €15,000', 'Up to €20,000', 'Up to €30,000', 'Up to €50,000', '€50,000+'];
@@ -205,11 +179,22 @@ const Listings = () => {
     return { min: min || null, max: max || null };
   };
 
+  const getAvailableSeries = () => {
+    return filters.producer ? Object.keys(carData[filters.producer] || {}) : [];
+  };
+  const getAvailableClasses = () => {
+    return filters.producer && filters.series ? carData[filters.producer][filters.series] || [] : [];
+  };
   const handleFilterChange = (filterName, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [filterName]: value
-    }));
+    setFilters(prev => {
+      if (filterName === 'producer') {
+        return { ...prev, producer: value, series: '', carClass: '' };
+      } else if (filterName === 'series') {
+        return { ...prev, series: value, carClass: '' };
+      } else {
+        return { ...prev, [filterName]: value };
+      }
+    });
   };
 
   const clearFilters = () => {
@@ -255,22 +240,33 @@ const Listings = () => {
               <select
                 className="form-select form-select-sm"
                 value={filters.producer}
-                onChange={e => {handleFilterChange('producer', e.target.value);handleFilterChange('model', '');}}
+                onChange={e => handleFilterChange('producer', e.target.value)}
               >
                 <option value="">Brand</option>
-                {brandOptions.map(brand => (
-                  <option key={brand.name} value={brand.name}>{brand.name}</option>
+                {Object.keys(carData).sort().map(brand => (
+                  <option key={brand} value={brand}>{brand}</option>
                 ))}
               </select>
               <select
                 className="form-select form-select-sm"
-                value={filters.model}
-                onChange={e => handleFilterChange('model', e.target.value)}
+                value={filters.series}
+                onChange={e => handleFilterChange('series', e.target.value)}
                 disabled={!filters.producer}
               >
-                <option value="">Model</option>
-                {filters.producer && brandOptions.find(b => b.name === filters.producer)?.models.map(model => (
-                  <option key={model} value={model}>{model}</option>
+                <option value="">{filters.producer ? 'Series' : 'First select a brand'}</option>
+                {getAvailableSeries().map(series => (
+                  <option key={series} value={series}>{series}</option>
+                ))}
+              </select>
+              <select
+                className="form-select form-select-sm"
+                value={filters.carClass}
+                onChange={e => handleFilterChange('carClass', e.target.value)}
+                disabled={!filters.series || getAvailableClasses().length === 0}
+              >
+                <option value="">{filters.series ? 'Class/Body Type (optional)' : 'First select a series'}</option>
+                {getAvailableClasses().map(carClass => (
+                  <option key={carClass} value={carClass}>{carClass}</option>
                 ))}
               </select>
               <select

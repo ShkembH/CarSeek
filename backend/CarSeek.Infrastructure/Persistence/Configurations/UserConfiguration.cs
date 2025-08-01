@@ -8,40 +8,45 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        builder.HasKey(u => u.Id);
-
-        builder.Property(u => u.Email)
-            .HasMaxLength(255)
-            .IsRequired();
-
-        builder.HasIndex(u => u.Email)
-            .IsUnique();
-
-        builder.Property(u => u.PasswordHash)
-            .IsRequired();
-
-        builder.Property(u => u.FirstName)
-            .HasMaxLength(100)
-            .IsRequired();
-
-        builder.Property(u => u.LastName)
-            .HasMaxLength(100)
-            .IsRequired();
-
-        builder.Property(u => u.Role)
-            .IsRequired();
-
-        builder.Property(u => u.Status)
+        builder.HasKey(x => x.Id);
+        
+        builder.Property(x => x.Email)
             .IsRequired()
-            .HasDefaultValue(CarSeek.Domain.Enums.UserStatus.Approved);
+            .HasMaxLength(255);
+            
+        builder.Property(x => x.PasswordHash)
+            .IsRequired()
+            .HasMaxLength(255);
+            
+        builder.Property(x => x.FirstName)
+            .IsRequired()
+            .HasMaxLength(100);
+            
+        builder.Property(x => x.LastName)
+            .IsRequired()
+            .HasMaxLength(100);
+            
+        builder.Property(x => x.PhoneNumber)
+            .HasMaxLength(20);
+            
+        builder.Property(x => x.Country)
+            .HasMaxLength(100);
+            
+        builder.Property(x => x.City)
+            .HasMaxLength(100);
 
-        // Relationships
-        builder.HasOne(u => u.Dealership)
-            .WithOne(d => d.User)
-            .HasForeignKey<Dealership>(d => d.UserId);
-
-        builder.HasMany(u => u.SavedListings)
-            .WithOne(sl => sl.User)
-            .HasForeignKey(sl => sl.UserId);
+        // Add indexes for better query performance
+        builder.HasIndex(x => x.Email).IsUnique(); // Email should be unique
+        builder.HasIndex(x => x.Role); // For filtering by user role
+        builder.HasIndex(x => x.Status); // For filtering by user status
+        builder.HasIndex(x => x.IsActive); // For active user queries
+        
+        // Composite indexes for common queries
+        builder.HasIndex(x => new { x.Role, x.IsActive });
+        builder.HasIndex(x => new { x.Status, x.IsActive });
+        
+        // Full-text search for name searches
+        builder.HasIndex(x => new { x.FirstName, x.LastName })
+            .HasDatabaseName("IX_User_Name_FullText");
     }
 }

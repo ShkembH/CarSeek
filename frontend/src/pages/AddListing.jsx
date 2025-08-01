@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/api';
 import '../styles/pages/AddListing.css';
+import carData from '../carData';
 
 const AddListing = () => {
   const navigate = useNavigate();
@@ -16,11 +17,12 @@ const AddListing = () => {
     title: '',
     description: '',
     year: '',
-    make: '',
-    model: '',
+    make: '', // Brand
+    series: '', // Series/Family (e.g., C)
+    carClass: '', // Class/Body Type (e.g., C-Class, CLA, etc.)
     price: '',
     mileage: '',
-    condition: 'used', // new, used
+    condition: 'used',
     fuelType: 'gasoline',
     transmission: 'manual',
     color: '',
@@ -30,31 +32,7 @@ const AddListing = () => {
 
   const totalSteps = 5; // Updated to 5 steps
 
-  // Car makes and models mapping
-  const carMakesAndModels = {
-    'Toyota': ['Camry', 'Corolla', 'RAV4', 'Highlander', 'Prius', 'Sienna', 'Tacoma', 'Tundra', 'Avalon', 'Yaris'],
-    'Honda': ['Civic', 'Accord', 'CR-V', 'Pilot', 'Fit', 'HR-V', 'Passport', 'Ridgeline', 'Insight', 'Odyssey'],
-    'Ford': ['F-150', 'Mustang', 'Explorer', 'Escape', 'Focus', 'Fusion', 'Edge', 'Expedition', 'Ranger', 'Bronco'],
-    'Chevrolet': ['Silverado', 'Equinox', 'Malibu', 'Tahoe', 'Suburban', 'Camaro', 'Corvette', 'Traverse', 'Impala', 'Cruze'],
-    'BMW': ['3 Series', '5 Series', '7 Series', 'X3', 'X5', 'X7', 'Z4', 'i3', 'i8', 'M3', 'M5'],
-    'Mercedes-Benz': ['C-Class', 'E-Class', 'S-Class', 'GLC', 'GLE', 'GLS', 'A-Class', 'CLA', 'SL', 'AMG GT'],
-    'Audi': ['A3', 'A4', 'A6', 'A8', 'Q3', 'Q5', 'Q7', 'Q8', 'TT', 'R8', 'e-tron'],
-    'Volkswagen': ['Golf', 'Jetta', 'Passat', 'Tiguan', 'Atlas', 'Beetle', 'Arteon', 'ID.4', 'Touareg'],
-    'Nissan': ['Altima', 'Sentra', 'Maxima', 'Rogue', 'Murano', 'Pathfinder', 'Titan', 'Leaf', '370Z', 'GT-R'],
-    'Hyundai': ['Elantra', 'Sonata', 'Tucson', 'Santa Fe', 'Palisade', 'Kona', 'Ioniq', 'Genesis', 'Veloster'],
-    'Kia': ['Forte', 'Optima', 'Sorento', 'Sportage', 'Telluride', 'Soul', 'Stinger', 'Niro', 'Carnival'],
-    'Mazda': ['Mazda3', 'Mazda6', 'CX-3', 'CX-5', 'CX-9', 'MX-5 Miata', 'CX-30'],
-    'Subaru': ['Impreza', 'Legacy', 'Outback', 'Forester', 'Ascent', 'WRX', 'BRZ', 'Crosstrek'],
-    'Lexus': ['ES', 'IS', 'GS', 'LS', 'NX', 'RX', 'GX', 'LX', 'LC', 'RC'],
-    'Infiniti': ['Q50', 'Q60', 'QX50', 'QX60', 'QX80', 'Q70'],
-    'Acura': ['ILX', 'TLX', 'RLX', 'RDX', 'MDX', 'NSX'],
-    'Volvo': ['S60', 'S90', 'XC40', 'XC60', 'XC90', 'V60', 'V90'],
-    'Jaguar': ['XE', 'XF', 'XJ', 'F-PACE', 'E-PACE', 'I-PACE', 'F-TYPE'],
-    'Land Rover': ['Range Rover', 'Range Rover Sport', 'Range Rover Evoque', 'Discovery', 'Defender'],
-    'Porsche': ['911', 'Cayenne', 'Macan', 'Panamera', 'Taycan', 'Boxster', 'Cayman'],
-    'Tesla': ['Model S', 'Model 3', 'Model X', 'Model Y', 'Cybertruck', 'Roadster']
-  };
-
+  // Remove carMakesAndModels
 
 
   const conditions = [
@@ -100,13 +78,18 @@ const AddListing = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
-    // If make is changed, reset the model
     if (name === 'make') {
       setFormData(prev => ({
         ...prev,
-        [name]: value,
-        model: '' // Reset model when make changes
+        make: value,
+        series: '',
+        carClass: ''
+      }));
+    } else if (name === 'series') {
+      setFormData(prev => ({
+        ...prev,
+        series: value,
+        carClass: ''
       }));
     } else {
       setFormData(prev => ({
@@ -114,21 +97,19 @@ const AddListing = () => {
         [name]: value
       }));
     }
-
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
-
-    // Clear model error when make changes
-    if (name === 'make' && errors.model) {
-      setErrors(prev => ({ ...prev, model: '' }));
+    if ((name === 'make' || name === 'series') && errors.carClass) {
+      setErrors(prev => ({ ...prev, carClass: '' }));
     }
   };
 
-  // Get available models based on selected make
-  const getAvailableModels = () => {
-    return formData.make ? carMakesAndModels[formData.make] || [] : [];
+  const getAvailableSeries = () => {
+    return formData.make ? Object.keys(carData[formData.make] || {}) : [];
+  };
+  const getAvailableClasses = () => {
+    return formData.make && formData.series ? carData[formData.make][formData.series] || [] : [];
   };
 
   const handleFeatureToggle = (feature) => {
@@ -145,8 +126,9 @@ const AddListing = () => {
 
     switch (step) {
       case 1:
-        if (!formData.make.trim()) newErrors.make = 'Make is required';
-        if (!formData.model.trim()) newErrors.model = 'Model is required';
+        if (!formData.make.trim()) newErrors.make = 'Brand is required';
+        if (!formData.series.trim()) newErrors.series = 'Series is required';
+        // carClass is optional
         if (!formData.year || formData.year < 1900 || formData.year > new Date().getFullYear() + 1) {
           newErrors.year = 'Please enter a valid year';
         }
@@ -279,12 +261,14 @@ const AddListing = () => {
 
     setIsSubmitting(true);
     try {
+      // Always send a model value: carClass if selected, otherwise series
+      const model = formData.carClass || formData.series;
       const listingData = {
         title: formData.title,
         description: formData.description,
         year: parseInt(formData.year),
         make: formData.make,
-        model: formData.model,
+        model: model,
         price: parseFloat(formData.price),
         mileage: parseInt(formData.mileage),
         fuelType: formData.fuelType,
@@ -397,56 +381,63 @@ const AddListing = () => {
   const renderStep1 = () => (
     <div className="add-listing-step">
       <h3>Vehicle Information</h3>
-
       <div className="row">
-        <div className="col-md-6">
+        <div className="col-md-4">
           <div className="mb-3">
-            <label className="form-label">Make *</label>
+            <label className="form-label">Brand *</label>
             <select
               className={`form-select ${errors.make ? 'is-invalid' : ''}`}
               name="make"
               value={formData.make}
               onChange={handleInputChange}
             >
-              <option value="">Select a make</option>
-              {Object.keys(carMakesAndModels).sort().map(make => (
-                <option key={make} value={make}>
-                  {make}
-                </option>
+              <option value="">Select a brand</option>
+              {Object.keys(carData).sort().map(make => (
+                <option key={make} value={make}>{make}</option>
               ))}
             </select>
             {errors.make && <div className="invalid-feedback">{errors.make}</div>}
           </div>
         </div>
-        <div className="col-md-6">
+        <div className="col-md-4">
           <div className="mb-3">
-            <label className="form-label">Model *</label>
+            <label className="form-label">Series *</label>
             <select
-              className={`form-select ${errors.model ? 'is-invalid' : ''}`}
-              name="model"
-              value={formData.model}
+              className={`form-select ${errors.series ? 'is-invalid' : ''}`}
+              name="series"
+              value={formData.series}
               onChange={handleInputChange}
               disabled={!formData.make}
             >
-              <option value="">
-                {formData.make ? 'Select a model' : 'First select a make'}
-              </option>
-              {getAvailableModels().map(model => (
-                <option key={model} value={model}>
-                  {model}
-                </option>
+              <option value="">{formData.make ? 'Select a series' : 'First select a brand'}</option>
+              {getAvailableSeries().map(series => (
+                <option key={series} value={series}>{series}</option>
               ))}
             </select>
-            {errors.model && <div className="invalid-feedback">{errors.model}</div>}
+            {errors.series && <div className="invalid-feedback">{errors.series}</div>}
             {!formData.make && (
-              <div className="form-text text-muted">
-                Please select a make first to see available models
-              </div>
+              <div className="form-text text-muted">Please select a brand first to see available series</div>
             )}
           </div>
         </div>
+        <div className="col-md-4">
+          <div className="mb-3">
+            <label className="form-label">Class/Body Type (optional)</label>
+            <select
+              className="form-select"
+              name="carClass"
+              value={formData.carClass}
+              onChange={handleInputChange}
+              disabled={!formData.series || getAvailableClasses().length === 0}
+            >
+              <option value="">{formData.series ? 'Select a class/body type (optional)' : 'First select a series'}</option>
+              {getAvailableClasses().map(carClass => (
+                <option key={carClass} value={carClass}>{carClass}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
-
       <div className="row">
         <div className="col-md-6">
           <div className="mb-3">
@@ -474,9 +465,7 @@ const AddListing = () => {
             >
               <option value="">Select a color</option>
               {carColors.map(color => (
-                <option key={color.value} value={color.value}>
-                  {color.label}
-                </option>
+                <option key={color.value} value={color.value}>{color.label}</option>
               ))}
             </select>
           </div>
@@ -730,8 +719,9 @@ const AddListing = () => {
         <div className="add-listing-review-section">
           <h5>Vehicle Information</h5>
           <div className="add-listing-review-grid">
-            <div><strong>Make:</strong> {formData.make}</div>
-            <div><strong>Model:</strong> {formData.model}</div>
+            <div><strong>Brand:</strong> {formData.make}</div>
+            <div><strong>Series:</strong> {formData.series}</div>
+            <div><strong>Class/Body Type:</strong> {formData.carClass || 'Not specified'}</div>
             <div><strong>Year:</strong> {formData.year}</div>
             <div><strong>Color:</strong> {formData.color || 'Not specified'}</div>
             <div><strong>Condition:</strong> {formData.condition}</div>

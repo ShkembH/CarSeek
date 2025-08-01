@@ -18,17 +18,20 @@ public class CreateCarListingCommandHandler : IRequestHandler<CreateCarListingCo
     private readonly ICurrentUserService _currentUserService;
     private readonly IMapper _mapper;
     private readonly IActivityLogger _activityLogger;
+    private readonly ICacheService _cacheService;
 
     public CreateCarListingCommandHandler(
         IApplicationDbContext context,
         ICurrentUserService currentUserService,
         IMapper mapper,
-        IActivityLogger activityLogger)
+        IActivityLogger activityLogger,
+        ICacheService cacheService)
     {
         _context = context;
         _currentUserService = currentUserService;
         _mapper = mapper;
         _activityLogger = activityLogger;
+        _cacheService = cacheService;
     }
 
     public async Task<CarListingDto> Handle(CreateCarListingCommand request, CancellationToken cancellationToken)
@@ -100,6 +103,9 @@ public class CreateCarListingCommandHandler : IRequestHandler<CreateCarListingCo
 
         _context.CarListings.Add(carListing);
         await _context.SaveChangesAsync(cancellationToken);
+
+        // Invalidate cache for car listings
+        await _cacheService.RemoveByPatternAsync("car_listings:*");
 
         // Log the activity with status information
         var statusMessage = listingStatus == ListingStatus.Active

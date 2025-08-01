@@ -45,11 +45,16 @@ const AdminEditUser = () => {
     }
   };
 
-  const handleUpdate = async (formData) => {
+  const handleUpdate = async (form) => {
     setError(null);
     setSuccess(null);
     try {
-      // TODO: Implement admin update user API
+      const data = { ...form };
+      // Ensure isActive is a boolean
+      if ('isActive' in data) {
+        data.isActive = data.isActive === 'true' || data.isActive === true;
+      }
+      await apiService.updateUserByAdmin(userId, { request: data });
       setSuccess('User updated successfully!');
     } catch (err) {
       setError('Failed to update user.');

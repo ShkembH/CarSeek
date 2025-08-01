@@ -16,11 +16,7 @@ const ProfileForm = ({ profile, onUpdate }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    const formData = new FormData();
-    Object.entries(form).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) formData.append(key, value);
-    });
-    await onUpdate(formData);
+    await onUpdate(form);
     setSubmitting(false);
   };
 
@@ -50,6 +46,18 @@ const ProfileForm = ({ profile, onUpdate }) => {
         <label htmlFor="lastName">Last Name</label>
         <input type="text" id="lastName" name="lastName" value={form.lastName || ''} onChange={handleChange} />
       </div>
+      <div className="profile-form-group">
+        <label htmlFor="isActive">Active</label>
+        <select
+          id="isActive"
+          name="isActive"
+          value={form.isActive ? 'true' : 'false'}
+          onChange={handleChange}
+        >
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
+      </div>
       <button type="submit" disabled={submitting}>{submitting ? 'Saving...' : 'Save Changes'}</button>
     </form>
   );
@@ -76,12 +84,7 @@ const DealershipProfileForm = ({ profile, onUpdate }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    const formData = new FormData();
-    Object.entries(form).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) formData.append(key, value);
-    });
-    if (file) formData.append('BusinessCertificate', file);
-    await onUpdate(formData);
+    await onUpdate({ ...form, businessCertificate: file });
     setSubmitting(false);
   };
 
@@ -109,6 +112,18 @@ const DealershipProfileForm = ({ profile, onUpdate }) => {
         {profile.businessCertificatePath && (
           <a href={profile.businessCertificatePath} target="_blank" rel="noopener noreferrer">View Current Certificate</a>
         )}
+      </div>
+      <div className="profile-form-group">
+        <label htmlFor="isActive">Active</label>
+        <select
+          id="isActive"
+          name="isActive"
+          value={form.isActive ? 'true' : 'false'}
+          onChange={handleChange}
+        >
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
       </div>
       <button type="submit" disabled={submitting}>{submitting ? 'Saving...' : 'Save Changes'}</button>
     </form>

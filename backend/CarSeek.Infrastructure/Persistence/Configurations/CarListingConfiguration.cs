@@ -8,52 +8,46 @@ public class CarListingConfiguration : IEntityTypeConfiguration<CarListing>
 {
     public void Configure(EntityTypeBuilder<CarListing> builder)
     {
-        builder.HasKey(c => c.Id);
+        builder.HasKey(x => x.Id);
+        
+        builder.Property(x => x.Title)
+            .IsRequired()
+            .HasMaxLength(200);
+            
+        builder.Property(x => x.Description)
+            .IsRequired()
+            .HasMaxLength(2000);
+            
+        builder.Property(x => x.Make)
+            .IsRequired()
+            .HasMaxLength(100);
+            
+        builder.Property(x => x.Model)
+            .IsRequired()
+            .HasMaxLength(100);
+            
+        builder.Property(x => x.Price)
+            .HasColumnType("decimal(18,2)");
+            
+        builder.Property(x => x.Features)
+            .HasMaxLength(1000);
 
-        builder.Property(c => c.Title)
-            .HasMaxLength(200)
-            .IsRequired();
-
-        builder.Property(c => c.Description)
-            .HasMaxLength(2000)
-            .IsRequired();
-
-        builder.Property(c => c.Year)
-            .IsRequired();
-
-        builder.Property(c => c.Make)
-            .HasMaxLength(50)
-            .IsRequired();
-
-        builder.Property(c => c.Model)
-            .HasMaxLength(50)
-            .IsRequired();
-
-        builder.Property(c => c.Price)
-            .HasPrecision(18, 2)
-            .IsRequired();
-
-        builder.Property(c => c.Mileage)
-            .IsRequired();
-
-        builder.Property(c => c.Status)
-            .IsRequired();
-
-        // Relationships
-        builder.HasOne(c => c.Dealership)
-            .WithMany(d => d.Listings)
-            .HasForeignKey(c => c.DealershipId)
-            .OnDelete(DeleteBehavior.SetNull)  // Changed to SetNull since it's optional
-            .IsRequired(false);  // Make the relationship optional
-
-        // Add relationship to User
-        builder.HasOne(c => c.User)
-            .WithMany()  // User doesn't have a navigation property back to listings
-            .HasForeignKey(c => c.UserId)
-            .OnDelete(DeleteBehavior.NoAction);  // Changed from Cascade to NoAction to avoid cascade conflicts
-
-        builder.HasMany(c => c.SavedByUsers)
-            .WithOne(sl => sl.CarListing)
-            .HasForeignKey(sl => sl.CarListingId);
+        // Add indexes for better search performance
+        builder.HasIndex(x => x.Status); // For filtering active listings
+        builder.HasIndex(x => x.Make); // For brand filtering
+        builder.HasIndex(x => x.Model); // For model filtering
+        builder.HasIndex(x => x.Year); // For year range filtering
+        builder.HasIndex(x => x.Price); // For price range filtering
+        builder.HasIndex(x => x.UserId); // For user's listings
+        builder.HasIndex(x => x.DealershipId); // For dealership listings
+        
+        // Composite indexes for common search combinations
+        builder.HasIndex(x => new { x.Status, x.Make, x.Model });
+        builder.HasIndex(x => new { x.Status, x.Year, x.Price });
+        builder.HasIndex(x => new { x.Status, x.UserId });
+        
+        // Full-text search index for title and description
+        builder.HasIndex(x => new { x.Title, x.Description })
+            .HasDatabaseName("IX_CarListing_Title_Description_FullText");
     }
 }
